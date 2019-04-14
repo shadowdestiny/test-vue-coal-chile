@@ -1,11 +1,17 @@
 /node_modules
 /public/hot
 /public/storage
+/public/css
+/public/js
+/public/fonts
+/public/images
 /storage/*.key
 /vendor
+/.idea
 .env
 .phpunit.result.cache
 Homestead.json
 Homestead.yaml
 npm-debug.log
 yarn-error.log
+/.idea/test.iml

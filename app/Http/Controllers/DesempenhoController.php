@@ -6,7 +6,12 @@ use Illuminate\Http\Request;
 
 class DesempenhoController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('guest');
+    }
+
     function index(){
-        return view('welcome');
+        return view('index.desempenho');
     }
 }
