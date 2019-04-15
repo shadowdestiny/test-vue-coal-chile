@@ -12,3 +12,4 @@
 */
 
 Route::get ('/'      , 'DesempenhoController@index');
+Route::post ('/get_gain'      , 'DesempenhoController@getAgain');
