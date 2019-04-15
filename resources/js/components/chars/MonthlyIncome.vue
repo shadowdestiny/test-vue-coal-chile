@@ -58,7 +58,15 @@ export default {
   mounted() {
     // this.chartData is created in the mixin
     this.renderChart(this.chartData, this.options);
+
   },
+  watch: {
+    max () {
+        this.options.scales.yAxes[0].ticks.max = this.max
+
+        this.renderChart(this.chartData, this.options);
+    }
+  }
 
 };
 </script>

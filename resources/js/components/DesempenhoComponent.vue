@@ -97,10 +97,11 @@
             <div class="row">
                 <div class="col-md-12 center">
                     <button type="button" class="btn btn-primary" @click="relatorio()">Relatorio</button>
-
+                    <button type="button" class="btn btn-secondary" @click="grapthBar()">Grafico</button>
+                    <button type="button" class="btn btn-success" @click="pizza()">Pizza</button>
                 </div>
             </div>
-            <div class="row">
+            <div class="row"  v-if="isShowBar">
                 <div class="col-sm-12">
                     <h2>Grafico</h2>
                     <div class="card">
@@ -108,16 +109,16 @@
                                 <monthly-income
                                         :chart-data="datacollection"
                                         :width="400"
-                                        :height="600"
+                                        :height="800"
                                         :max="max"
                                 ></monthly-income>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="row">
+            <div class="row" v-if="isShowCake">
                 <div class="col-sm-12">
-                    <h2>Grafico</h2>
+                    <h2>Pizza</h2>
                     <div class="card">
                         <div class="card-body">
                             <polar-income
@@ -129,7 +130,7 @@
                     </div>
                 </div>
             </div>
-            <div class="row">
+            <div class="row" v-if="isShowConsult">
                 <div class="col-md-12">
 
                     <h2>Consultores</h2>
@@ -192,6 +193,9 @@
         },
         data(){
             return {
+                isShowConsult:false,
+                isShowBar:false,
+                isShowCake:false,
                 leftMultipleSelections:[],
                 rightMultipleSelections:[],
                 leftList:[
@@ -237,39 +241,45 @@
                     this.leftList.push(element);
                 });
             },
-            relatorio(){
+            getResult(){
                 let rows = [];
-                let users = []
+                let users = [];
+
                 axios.post("/get_gain",{
                     users_selected:this.rightList,
                     filter:this.filter
                 }).then((response)=>{
 
-                    let promedio = 0;
-                    let promedio_total = [];
-                    let consult = [];
-                    let lucro = [];
-                    let receita_liquida = [];
-                    let colors = [];
+                    if(response.data.results.length > 0){
+                        let promedio = 0;
+                        let promedio_total = [];
+                        let consult = [];
+                        let lucro = [];
+                        let receita_liquida = [];
+                        let colors = [];
 
-                    let max_receita = response.data.graph[response.data.graph.length - 1].receita_liquida;
+                        let max_receita = response.data.graph[response.data.graph.length - 1].receita_liquida;
 
-                    response.data.graph.forEach((element)=>{
-                        promedio += element.custo_fixo;
-                        consult.push(element.no_usuario);
-                        lucro.push(element.lucro);
-                        receita_liquida.push(Math.round((element.receita_liquida * 100) / max_receita));
-                        colors.push('#'+Math.floor(Math.random()*16777215).toString(16));
-                    });
+                        response.data.graph.forEach((element)=>{
+                            promedio += element.custo_fixo;
+                            consult.push(element.no_usuario);
+                            lucro.push(element.lucro);
+                            receita_liquida.push(Math.round((element.receita_liquida * 100) / max_receita));
+                            colors.push('#'+Math.floor(Math.random()*16777215).toString(16));
+                        });
 
-                    promedio = promedio / response.data.graph.length;
+                        let max_lucro = Math.round(lucro[lucro.length - 1]);
 
-                    response.data.graph.forEach((element)=>{
-                        promedio_total.push(promedio)
-                    });
+                        //this.max = Math.round(max_lucro);
 
-                    let graph = {
-                        labels: consult,
+                        promedio = promedio / response.data.graph.length;
+
+                        response.data.graph.forEach((element)=>{
+                            promedio_total.push(promedio)
+                        });
+
+                        let graph = {
+                            labels: consult,
                             datasets: [
                                 {
                                     label: "Custo Fixo Medio",
@@ -282,34 +292,51 @@
                                     data: lucro
                                 },
                             ]
-                    };
+                        };
 
-                    let polarcollection = {
-                        datasets: [{
-                            data: receita_liquida,
-                            backgroundColor: colors,
-                            label: 'Consultores' // for legend
-                        }],
-                        labels: consult
-                    };
+                        let polarcollection = {
+                            datasets: [{
+                                data: receita_liquida,
+                                backgroundColor: colors,
+                                label: 'Consultores' // for legend
+                            }],
+                            labels: consult
+                        };
 
-                    this.datacollection     = graph;
-                    this.polarcollection    = polarcollection;
+                        this.datacollection     = graph;
+                        this.polarcollection    = polarcollection;
 
-                    if(this.graph.length > 0){
-                        this.min = Math.round(this.graph[0].receita_liquida);
-                        this.max = Math.round(this.graph[this.graph.length - 1].receita_liquida);
+                        response.data.results.forEach((element,index)=>{
+                            rows.push(element);
+
+                            if(this.validate(index,response.data.results)){
+                                users.push(rows);
+                                rows = [];
+                            }
+                        });
+                        this.results = users;
                     }
-                    response.data.results.forEach((element,index)=>{
-                        rows.push(element);
-
-                        if(this.validate(index,response.data.results)){
-                            users.push(rows);
-                            rows = [];
-                        }
-                    });
-                    this.results = users;
                 });
+            },
+            relatorio(){
+                this.isShowConsult  = true;
+                this.isShowCake     = false;
+                this.isShowBar      = false;
+                this.getResult();
+            },
+            grapthBar(){
+                this.isShowConsult  = false;
+                this.isShowCake     = false;
+                this.isShowBar      = true;
+
+                this.getResult();
+            },
+            pizza(){
+                this.isShowConsult  = false;
+                this.isShowCake     = true;
+                this.isShowBar      = false;
+
+                this.getResult();
             },
             validate(index, results) {
 
