@@ -315,6 +315,10 @@
                             }
                         });
                         this.results = users;
+                    } else {
+                        this.isShowConsult  = false;
+                        this.isShowCake     = false;
+                        this.isShowBar      = false;
                     }
                 });
             },
