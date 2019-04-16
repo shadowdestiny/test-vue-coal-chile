@@ -64,7 +64,7 @@ class DesempenhoController extends Controller
             JOIN CAO_USUARIO CU ON  CAOS.CO_USUARIO = CU.CO_USUARIO
             WHERE CO.CO_USUARIO IN ($string_users_comma)
             AND CF.data_emissao BETWEEN CAST('$from' AS DATE) AND DATE_ADD(CAST('$to' AS DATE), INTERVAL 1 MONTH )
-            GROUP BY DATE_FORMAT(CF.data_emissao,'%m-%Y'),coal.CAOS.brut_salario,CU.co_usuario,CU.no_usuario
+            GROUP BY DATE_FORMAT(CF.data_emissao,'%m-%Y'),CAOS.brut_salario,CU.co_usuario,CU.no_usuario
             ORDER BY CU.no_usuario ASC,CF.data_emissao ASC
         ";
 
@@ -87,7 +87,7 @@ class DesempenhoController extends Controller
                     JOIN CAO_USUARIO CU ON  CAOS.CO_USUARIO = CU.CO_USUARIO
                     WHERE CO.CO_USUARIO IN ($string_users_comma)
                     AND CF.data_emissao BETWEEN CAST('$from' AS DATE) AND DATE_ADD(CAST('$to' AS DATE), INTERVAL 1 MONTH )
-                    GROUP BY coal.CAOS.brut_salario,CU.co_usuario,CU.no_usuario
+                    GROUP BY CAOS.brut_salario,CU.co_usuario,CU.no_usuario
                     ORDER BY CU.no_usuario ASC,CF.data_emissao ASC
             
             ) AS s ORDER BY receita_liquida asc
