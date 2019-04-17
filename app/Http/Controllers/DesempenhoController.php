@@ -71,7 +71,7 @@ class DesempenhoController extends Controller
         $data = collect(\DB::select($query));
 
         $query = "
-          SELECT receita_liquida,custo_fixo,lucro,no_usuario FROM (
+          SELECT receita_liquida,custo_fixo,lucro,no_usuario,co_usuario FROM (
                 SELECT 
                     sum(CF.valor - ((CF.valor * CF.total_imp_inc) / 100)) as receita_liquida,
                     CAOS.brut_salario as custo_fixo,

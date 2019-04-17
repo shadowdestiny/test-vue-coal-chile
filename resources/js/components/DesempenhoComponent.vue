@@ -156,10 +156,17 @@
 
                                         <tr  v-for="row in user">
                                             <td>{{(row.data_emissao)}}</td>
-                                            <td>-R$ {{formatPrice(row.receita_liquida)}}</td>
-                                            <td>-R$ {{formatPrice(row.custo_fixo)}}</td>
-                                            <td>-R$ {{formatPrice(row.comission)}}</td>
-                                            <td>-R$ {{formatPrice(row.lucro)}}</td>
+                                            <td> {{row.receita_liquida < 0 ? '- R$' : 'R$'}} {{formatPrice(row.receita_liquida)}}</td>
+                                            <td> {{row.custo_fixo < 0 ? '- R$' : 'R$'}} {{formatPrice(row.custo_fixo)}}</td>
+                                            <td> {{row.comission < 0 ? '- R$' : 'R$'}} {{formatPrice(row.comission)}}</td>
+                                            <td  :style="row.lucro < 0 ? { 'color': 'red' } : { 'color': 'initial' }"> {{row.lucro < 0 ? '- R$' : 'R$'}} {{formatPrice(row.lucro)}}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>SALDO</th>
+                                            <th>{{total_receita_liquida(user) < 0 ? '- R$' : 'R$'}} {{formatPrice(total_receita_liquida(user))}}</th>
+                                            <th>{{total_custo_fixo(user) < 0 ? '- R$' : 'R$'}} {{formatPrice(total_custo_fixo(user))}}</th>
+                                            <th>{{total_comission(user) < 0 ? '- R$' : 'R$'}} {{formatPrice(total_comission(user))}}</th>
+                                            <th :style="total_lucro(user) < 0 ? { 'color': 'red' } : { 'color': 'blue' }" >{{total_lucro(user) < 0 ? '- R$' : 'R$'}} {{formatPrice(total_lucro(user))}}</th>
                                         </tr>
                                         </tbody>
                                     </table>
@@ -167,8 +174,6 @@
                             </div>
                         </div>
                     </div>
-
-
                 </div>
             </div>
 
@@ -255,22 +260,24 @@
                         let promedio_total = [];
                         let consult = [];
                         let lucro = [];
-                        let receita_liquida = [];
+                        let receita_liquida_percentage = [];
                         let colors = [];
 
-                        let max_receita = response.data.graph[response.data.graph.length - 1].receita_liquida;
+                        let sum_receita_liquida = 0;
+
+                        //this.max = response.data.graph[response.data.graph.length - 1].receita_liquida;
+
+                        response.data.graph.forEach((element)=>{
+                            sum_receita_liquida += element.receita_liquida;
+                        });
 
                         response.data.graph.forEach((element)=>{
                             promedio += element.custo_fixo;
                             consult.push(element.no_usuario);
                             lucro.push(element.lucro);
-                            receita_liquida.push(Math.round((element.receita_liquida * 100) / max_receita));
-                            colors.push('#'+Math.floor(Math.random()*16777215).toString(16));
+                            receita_liquida_percentage.push(Math.round((element.receita_liquida * 100) / sum_receita_liquida));
+                            colors.push("#"+this.intToRGB(this.hashCode(element.co_usuario)));
                         });
-
-                        let max_lucro = Math.round(lucro[lucro.length - 1]);
-
-                        //this.max = Math.round(max_lucro);
 
                         promedio = promedio / response.data.graph.length;
 
@@ -296,7 +303,7 @@
 
                         let polarcollection = {
                             datasets: [{
-                                data: receita_liquida,
+                                data: receita_liquida_percentage,
                                 backgroundColor: colors,
                                 label: 'Consultores' // for legend
                             }],
@@ -353,7 +360,50 @@
             formatPrice(value) {
                 let val = (value/1).toFixed(2).replace('.', ',')
                 return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")
-            }
+            },
+            total_receita_liquida(user){
+                let saldo_receita_liquida = 0;
+                user.forEach((element)=>{
+                    saldo_receita_liquida = saldo_receita_liquida + element.receita_liquida;
+                });
+                return saldo_receita_liquida;
+            },
+            total_custo_fixo(user){
+                let saldo_custo_fixo = 0;
+                user.forEach((element)=>{
+                    saldo_custo_fixo = saldo_custo_fixo + element.custo_fixo;
+                });
+                return saldo_custo_fixo;
+            },
+            total_comission(user){
+                let saldo_comission = 0;
+                user.forEach((element)=>{
+                    saldo_comission = saldo_comission + element.comission;
+                });
+                return saldo_comission;
+            },
+            total_lucro(user){
+                let saldo_lucro = 0;
+                user.forEach((element)=>{
+                    saldo_lucro = saldo_lucro + element.lucro;
+                });
+                return saldo_lucro;
+            },
+            hashCode(str){
+                var hash = 0;
+                for (var i = 0; i < str.length; i++) {
+                    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+                }
+                return hash;
+            },
+            intToRGB(i){
+                var c = (i & 0x00FFFFFF)
+                    .toString(16)
+                    .toUpperCase();
+
+                return "00000".substring(0, 6 - c.length) + c;
+            },
+
         }
     }
 </script>

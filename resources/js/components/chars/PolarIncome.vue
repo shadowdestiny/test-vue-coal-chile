@@ -2,7 +2,7 @@
 import { VueCharts, VueChartJs } from "vue-chartjs";
 
 export default {
-  extends: VueCharts.PolarArea,
+  extends: VueCharts.Pie,
   mixins: [VueCharts.mixins.reactiveProp],
   props:{
       max: Number
@@ -10,23 +10,22 @@ export default {
   data: function() {
     return {
       options: {
-
-        legend: {
-          display: true,
-          position: "right"
+        responsive: true,
+        maintainAspectRatio: false,
+        pieceLabel: {
+          mode: 'percentage',
+          precision: 2,
         },
         tooltips: {
           enabled: true,
-          mode: "single",
           callbacks: {
-            label: function(tooltipItems, data) {
-              return "" + tooltipItems.yLabel;
-            }
+              label:function (tooltipItem, data) {
+                  let dataset = data.datasets[tooltipItem.datasetIndex]
+                  let currentValue = dataset.data[tooltipItem.index]
+                  return currentValue + ' %'
+              }
           }
-        },
-        responsive: true,
-        maintainAspectRatio: false,
-        height: 200
+        }
       }
     };
   },
